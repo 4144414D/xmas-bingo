@@ -5,6 +5,7 @@ Email: adam@nucode.co.uk
 Usage:
     xmas-bingo <number-of-songs> [-o]
     xmas-bingo --all
+    xmas-bingo --smart
     xmas-bingo --version
     xmas-bingo --help
 
@@ -13,6 +14,7 @@ Usage:
     --version           Show the version.
     -o, --output        Save winning boards to a file.
     -a, --all           Determine results of all numbers of songs.
+    -s, --smart         Work out running wins.
 """
 VERSION="0.1"
 
@@ -61,6 +63,53 @@ def all():
         main(songs,False)
         print
 
+def new_songs(board):
+    results = set()
+    for x in range(25):
+        new_song = int('0'*x + '1' + '0'*(24-x),2)
+        new_board = new_song | board
+        if new_board != board:
+            results.add(new_board)
+    return(results)
+
+def smart():
+    boards = ([int('0000000000001000000000000',2)])
+    winning_boards = create_winning_boards()
+    song = 0
+    total_wins = 0
+    while len(boards) > 0:
+        song += 1
+        print "Round number",
+        print song
+        print '-'*(13+len(str(song)))
+        loosing_boards = set()
+        candidate_boards = set()
+        wins = 0
+
+        for board in boards:
+            #this is slow...
+            candidate_boards = candidate_boards | new_songs(board)
+
+        for candidate_board in candidate_boards:
+            if check_win(candidate_board,winning_boards):
+                wins += 1
+            else:
+                loosing_boards.add(candidate_board)
+        print "Round boards:  ",
+        print len(boards)
+        print "Winning boards:",
+        print wins
+        print "Loosing boards:",
+        print len(loosing_boards)
+        print "Total wins:    ",
+        total_wins += wins
+        print total_wins
+        print "Total winners: ",
+        print (100.0/(total_wins+len(loosing_boards)))*total_wins,
+        print "%"
+        boards = loosing_boards
+        print
+
 def main(songs,output):
     pool = create_pool(songs)
     winning_boards = create_winning_boards()
@@ -85,6 +134,8 @@ if __name__ == '__main__':
         arguments = docopt(__doc__, version=VERSION)
         if arguments['--all']:
             all()
+        elif arguments['--smart']:
+            smart()
         else:
             songs = int(arguments['<number-of-songs>'])
             main(songs,arguments['--output'])
