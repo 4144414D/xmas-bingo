@@ -28,12 +28,12 @@ def check_win(board,winning_boards):
     return False
 
 def create_pool(songs):
-        #poor way to determine options
+        #poor way to determine options. could be faster
         pool = []
-        for x in range(16777215): #16777215 highest 24 bit number
+        for x in range(16777215+1): #16777215 highest 24 bit number
              candidate = '{0:024b}'.format(x)
              if candidate.count('1') == songs:
-                 candidate = candidate[:12] + '1' + candidate[12:]
+                 candidate = candidate[:12] + '1' + candidate[12:] #middle always set
                  pool.append(int(candidate,2))
         return pool
 
@@ -78,6 +78,7 @@ def main(songs,output):
     print wins
     print "Winning percentage:",
     print (100.0/count)*wins,
+    print
     if output: f.close()
 
 if __name__ == '__main__':
